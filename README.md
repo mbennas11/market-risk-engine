@@ -10,119 +10,99 @@
   <img src="https://img.shields.io/badge/Donn%C3%A9es-2020%20%E2%86%92%202026-eb6834" alt="Données">
 </p>
 
-<p align="center">
-  <b>VaR · Expected Shortfall (CVaR) · Monte Carlo · GARCH · Stress tests · Contribution au risque</b><br>
-  Un moteur de risque de marché complet, sur données réelles, en un seul script Python.
-</p>
+<h3 align="center">Combien un portefeuille de 1 M$ peut-il perdre en un jour ?<br>4 méthodes de VaR, 4 réponses différentes.</h3>
 
 ---
 
-## 🎯 En 30 secondes
+## 🛠️ Le projet
 
-Un portefeuille de **1 M$** réparti sur 5 classes d'actifs est analysé sur près de 7 ans de données de marché (janvier 2020 à octobre 2026, Covid, inflation de 2022 et choc d'avril 2025 inclus).
+Un moteur de risque de marché en Python, appliqué à un portefeuille de **1 M$** sur 5 ETF, avec des données réelles de janvier 2020 au 13 octobre 2026 (Covid, inflation de 2022, choc d'avril 2025) :
 
-| | Résultat | Ce que ça veut dire |
-|---|---|---|
-| 📉 **VaR 99 % à 1 jour** | **24 544 $** (2,45 %) | 1 jour sur 100, la perte dépasse ce montant |
-| 🔥 **Expected Shortfall (CVaR) 99 %** | **35 719 $** (3,57 %) | Perte moyenne pendant ces jours-là, 50 % de plus que ce que prévoit la loi normale |
-| ⚖️ **Concentration du risque** | **88 %** | Part du risque portée par les actions, qui ne pèsent que 65 % du capital |
-| 💥 **Pire stress test** | **−231 500 $** (−23,1 %) | Crise de liquidité, environ 9 fois la VaR journalière |
-| 📊 **Max drawdown réel** | **−26,5 %** | 2022 : actions et obligations ont baissé en même temps |
+- **VaR et Expected Shortfall (CVaR) à 99 %**, horizon 1 jour : historique, paramétrique gaussienne, Monte Carlo (100 000 scénarios)
+- **Volatilité GARCH(1,1)** par actif, pour une VaR dynamique
+- **5 stress tests** et **décomposition du risque** par actif
 
-## 💼 Le portefeuille
+| Actif | ETF | Poids |
+|---|---|:---:|
+| Actions US | SPY | 30 % |
+| Tech US | QQQ | 20 % |
+| Actions Europe | VGK | 15 % |
+| Treasuries US 20 ans et + | TLT | 20 % |
+| Or | GLD | 15 % |
 
-| Actif | ETF | Poids | Rôle |
-|---|---|:---:|---|
-| 📈 Actions US | SPY | 30 % | Cœur du portefeuille |
-| 💻 Tech US | QQQ | 20 % | Croissance, forte volatilité |
-| 🌍 Actions Europe | VGK | 15 % | Diversification géographique |
-| 🏛️ Treasuries US 20 ans et + | TLT | 20 % | Couverture en cas de récession |
-| 🥇 Or | GLD | 15 % | Valeur refuge, couverture contre l'inflation |
+## 📊 Les résultats
 
-## ⚙️ Pipeline
+**Perte à 1 jour, niveau de confiance 99 %**
 
-```mermaid
-flowchart LR
-    A[Yahoo Finance<br/>prix ajustés] --> B[Rendements<br/>journaliers]
-    B --> C[VaR & CVaR<br/>historique]
-    B --> D[VaR & CVaR<br/>paramétrique]
-    B --> E[Monte Carlo<br/>100 000 scénarios]
-    B --> F[GARCH 1,1<br/>par actif]
-    F --> G[VaR dynamique<br/>portefeuille]
-    B --> H[Contribution<br/>au risque]
-    B --> I[Stress tests<br/>5 scénarios]
-    C & D & E & G & H & I --> J[Rapport de risque]
-```
+| Méthode | VaR | Expected Shortfall (CVaR) |
+|---|---:|---:|
+| **Historique** | **24 546 $** (2,45 %) | **35 719 $** (3,57 %) |
+| Paramétrique gaussienne | 20 666 $ (2,07 %) | 23 749 $ (2,37 %) |
+| Monte Carlo gaussien | 20 707 $ (2,07 %) | 23 692 $ (2,37 %) |
+| GARCH(1,1) | 12 705 $ (1,27 %) | n/a |
 
-## 💡 Ce qu'il faut retenir
+| Indicateur | Résultat |
+|---|---|
+| 💥 Pire stress test (crise de liquidité) | **−231 500 $** (−23,2 %) |
+| 📉 Pire perte réelle (max drawdown) | **−26,5 %** en 2022 |
+| ⚖️ Part du risque portée par les actions | **88 %** pour 65 % du capital |
+
+<p align="center">
+  <img src="images/2_methodes.png" width="70%" alt="Comparaison des méthodes">
+</p>
+
+## ✅ Conclusion
 
 <table>
 <tr>
-<td width="50%"><img src="images/1_queues_epaisses.png" alt="Queues épaisses"></td>
-<td width="50%"><img src="images/2_volatilite_garch.png" alt="Volatilité GARCH"></td>
-</tr>
-<tr>
-<td valign="top">
+<td width="50%" valign="top">
 
-**1. La loi normale sous-estime la gravité des pertes.**
-La VaR historique dépasse la VaR gaussienne de 19 %, et l'Expected Shortfall de **50 %**. La loi normale se trompe peu sur le seuil, mais beaucoup sur ce qui se passe au-delà. C'est pour cette raison que la réglementation (FRTB, Bâle III) a remplacé la VaR 99 % par l'**Expected Shortfall 97,5 %**.
+**1. La loi normale sous-estime le risque extrême.**
+L'Expected Shortfall historique est **50 % plus élevé** que l'ES gaussien. Pour mesurer les pertes extrêmes, l'ES historique est la mesure la plus fiable, et c'est le standard de Bâle (FRTB).
 
 </td>
-<td valign="top">
+<td width="50%" valign="top">
 
-**2. La volatilité arrive par vagues.**
-La volatilité GARCH passe de moins de 10 % à **59 % (Covid)** et **47 % (avril 2025)**. Le marché étant calme aujourd'hui, la VaR GARCH (1,48 %) est *inférieure* à la VaR historique. Une VaR conditionnelle suit le régime de marché, une VaR historique a toujours du retard.
+**2. Un Monte Carlo gaussien n'apporte rien.**
+Il redonne la VaR paramétrique (20 707 $ contre 20 666 $) : simuler une loi normale redonne la loi normale. Sa valeur viendra d'une loi à queues épaisses.
 
 </td>
 </tr>
 <tr>
-<td width="50%"><img src="images/3_contribution_risque.png" alt="Contribution au risque"></td>
-<td width="50%"><img src="images/4_stress_tests.png" alt="Stress tests"></td>
+<td><img src="images/3_volatilite_garch.png" alt="Volatilité GARCH"></td>
+<td><img src="images/4_contribution_risque.png" alt="Contribution au risque"></td>
 </tr>
 <tr>
 <td valign="top">
 
-**3. Le poids d'un actif n'est pas son risque.**
-Les actions représentent 65 % du capital mais **88 % du risque**. Les obligations : 20 % du capital, 4 % du risque. Diversifier le capital ne veut pas dire diversifier le risque, d'où l'intérêt des approches *risk parity*.
+**3. La VaR GARCH est la plus basse, car le marché est calme.**
+Volatilité actuelle de 10 % contre 14 % en moyenne. C'est aussi la plus réactive : elle est montée à 59 % pendant le Covid, alors que la VaR historique réagit avec retard.
 
 </td>
 <td valign="top">
 
-**4. La diversification disparaît en période de crise.**
-En crise de liquidité, tout baisse ensemble : **−23 %**. Ce n'est pas que théorique : le pire drawdown réel (−26,5 %) date de **2022**, quand actions et obligations ont chuté en même temps.
+**4. La diversification est surtout apparente.**
+Les actions pèsent 65 % du capital mais **88 % du risque**. Les obligations : 20 % du capital, 4 % du risque.
+
+</td>
+</tr>
+<tr>
+<td><img src="images/5_stress_tests.png" alt="Stress tests"></td>
+<td><img src="images/6_conclusion.png" alt="Conclusion"></td>
+</tr>
+<tr>
+<td valign="top">
+
+En crise de liquidité, tout baisse ensemble : **−231 500 $, 9 fois la VaR**. Le pire drawdown réel (−26,5 %) date de **2022**, quand actions et obligations ont chuté en même temps.
+
+</td>
+<td valign="top">
+
+👉 **En pratique,** aucune mesure ne suffit seule. Un risk manager suit l'**ES historique** (risque extrême), la **VaR GARCH** (risque du moment) et les **stress tests** (scénarios encore jamais vus).
 
 </td>
 </tr>
 </table>
-
-**5. Un Monte Carlo ne vaut que par la distribution qu'il simule.** Le Monte Carlo gaussien donne la même VaR que la méthode paramétrique (2,07 %) : simuler une loi normale redonne la loi normale. Pour qu'il apporte quelque chose, il faut une distribution à queues épaisses (Student, bootstrap historique, copules).
-
-## 📊 Résultats détaillés
-
-<details>
-<summary><b>VaR et Expected Shortfall à 99 %, horizon 1 jour</b></summary>
-
-| Méthode | VaR | Expected Shortfall (CVaR) |
-|---|---:|---:|
-| Historique | 2,45 % · 24 544 $ | **3,57 % · 35 719 $** |
-| Paramétrique gaussienne | 2,07 % · 20 675 $ | 2,38 % · 23 759 $ |
-| Monte Carlo gaussien | 2,07 % · 20 717 $ | 2,37 % · 23 702 $ |
-| GARCH(1,1) | 1,48 % · 14 769 $ | n/a |
-
-Rendement annualisé 12,4 % · volatilité 14,4 % · pire journée −6,9 % (12/03/2020)
-</details>
-
-<details>
-<summary><b>Stress tests</b></summary>
-
-| Scénario | Actions US | Tech | Europe | Treasuries | Or | **Portefeuille** |
-|---|---:|---:|---:|---:|---:|---:|
-| Crise de liquidité | −30 % | −35 % | −32 % | −8 % | −5 % | **−23,1 %** |
-| Récession mondiale | −25 % | −30 % | −28 % | +10 % | +12 % | **−13,9 %** |
-| Krach actions | −20 % | −28 % | −22 % | +5 % | +8 % | **−12,7 %** |
-| Choc d'inflation | −12 % | −18 % | −10 % | −18 % | +15 % | **−10,1 %** |
-| Choc de taux | −8 % | −12 % | −7 % | −15 % | −5 % | **−9,6 %** |
-</details>
 
 ## 🧮 Méthodologie
 
@@ -158,6 +138,17 @@ Notations : $r$ est le rendement journalier du portefeuille, $w$ le vecteur des 
 RC_i = \frac{w_i (\Sigma w)_i}{w^{\top} \Sigma w}
 ```
 
+<details>
+<summary><b>Détail des stress tests</b></summary>
+
+| Scénario | Actions US | Tech | Europe | Treasuries | Or | **Portefeuille** |
+|---|---:|---:|---:|---:|---:|---:|
+| Crise de liquidité | −30 % | −35 % | −32 % | −8 % | −5 % | **−23,2 %** |
+| Récession mondiale | −25 % | −30 % | −28 % | +10 % | +12 % | **−13,9 %** |
+| Krach actions | −20 % | −28 % | −22 % | +5 % | +8 % | **−12,7 %** |
+| Choc d'inflation | −12 % | −18 % | −10 % | −18 % | +15 % | **−10,1 %** |
+| Choc de taux | −8 % | −12 % | −7 % | −15 % | −5 % | **−9,6 %** |
+</details>
 
 ## 🚀 Lancer le projet
 
@@ -165,27 +156,18 @@ RC_i = \frac{w_i (\Sigma w)_i}{w^{\top} \Sigma w}
 git clone https://github.com/mbennas11/market-risk-engine.git
 cd market-risk-engine
 pip install -r requirements.txt
-python market_risk_engine.py     # rapport de risque complet et graphiques
-python generate_charts.py        # régénère les visuels du dossier images/
+python market_risk_engine.py     # rapport de risque complet, sur les données jusqu'à aujourd'hui
+python generate_charts.py        # visuels du dossier images/, sur les données jusqu'au 13/10/2026
 ```
 
-> Les données vont jusqu'au jour d'exécution, donc les chiffres évoluent à chaque lancement.
+> `market_risk_engine.py` télécharge les données jusqu'au jour d'exécution, donc ses chiffres évoluent. Les résultats de ce README sont figés au 13/10/2026 pour rester reproductibles.
 
-```
-market-risk-engine/
-├── market_risk_engine.py   # moteur de risque (VaR, ES, Monte Carlo, GARCH, stress tests)
-├── generate_charts.py      # visuels du README
-├── requirements.txt
-└── images/
-```
-
-## 🛣️ Prochaines étapes
+## 🔜 Prochaines étapes
 
 - [ ] **Backtesting** de la VaR : tests de Kupiec et de Christoffersen
 - [ ] **Queues épaisses** : GARCH avec loi de Student, Monte Carlo par bootstrap historique
 - [ ] **Corrélations dynamiques** : DCC-GARCH
 - [ ] **Stress tests historiques** : 2008, mars 2020, 2022
-- [ ] VaR à 10 jours et Expected Shortfall 97,5 % (standard FRTB)
 
 ---
 
