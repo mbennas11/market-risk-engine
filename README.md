@@ -124,8 +124,7 @@ Rendement annualisé 12,4 % · volatilité 14,4 % · pire journée −6,9 % (12/
 | Choc de taux | −8 % | −12 % | −7 % | −15 % | −5 % | **−9,6 %** |
 </details>
 
-<details>
-<summary><b>Méthodologie et formules</b></summary>
+## 🧮 Méthodologie
 
 Notations : $r$ est le rendement journalier du portefeuille, $w$ le vecteur des poids, $\Sigma$ la matrice de covariance et $\alpha$ = 1 %.
 
@@ -158,7 +157,7 @@ Notations : $r$ est le rendement journalier du portefeuille, $w$ le vecteur des 
 ```math
 RC_i = \frac{w_i (\Sigma w)_i}{w^{\top} \Sigma w}
 ```
-</details>
+
 
 ## 🚀 Lancer le projet
 
