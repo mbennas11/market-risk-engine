@@ -156,3 +156,45 @@ ax.grid(axis="y", visible=False)
 footer(fig)
 save(fig, "4_stress_tests.png")
 print("done", h_var, g_var, h_cvar, g_cvar, rc)
+
+# 0. Banner (README header + GitHub social preview, 1280x640)
+from matplotlib.patches import FancyBboxPatch
+
+BG, CARD, WHITE, SOFT = "#101418", "#1b2128", "#ffffff", "#a9b1ba"
+BLUE_D, ORANGE_D = "#3987e5", "#d95926"
+fig = plt.figure(figsize=(12.8, 6.4), facecolor=BG)
+ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, 1280); ax.set_ylim(0, 640); ax.axis("off")
+ax.set_facecolor(BG)
+
+# decorative GARCH volatility trace along the bottom
+vol = cv.resample("W").mean().values
+xs = np.linspace(0, 1280, len(vol))
+ys = 40 + (vol - vol.min()) / (vol.max() - vol.min()) * 150
+ax.fill_between(xs, 0, ys, color=BLUE_D, alpha=0.12, lw=0)
+ax.plot(xs, ys, color=BLUE_D, alpha=0.55, lw=1.6)
+
+ax.text(64, 560, "PYTHON  ·  RISQUE DE MARCHÉ  ·  PORTEFEUILLE MULTI-ACTIFS", color=SOFT, fontsize=12,
+        weight="bold")
+ax.text(64, 490, "Market Risk Engine", color=WHITE, fontsize=46, weight="bold")
+ax.text(64, 440, "Combien un portefeuille de 1 M$ peut-il perdre en une journée ?", color=SOFT, fontsize=18)
+
+tiles = [
+    (fr(h_var), "VaR 99 % à 1 jour", BLUE_D),
+    (fr(h_cvar), "Expected Shortfall 99 %", BLUE_D),
+    (fr(rc[:3].sum(), 0), "du risque vient des actions", BLUE_D),
+    ("−" + fr(-min(pnl.values()) / 1e6, 0), "pire stress test", ORANGE_D),
+]
+tw, th, gap, x0, y0 = 270, 150, 20, 64, 230
+for i, (val, lab, col) in enumerate(tiles):
+    x = x0 + i * (tw + gap)
+    ax.add_patch(FancyBboxPatch((x, y0), tw, th, boxstyle="round,pad=0,rounding_size=14",
+                                fc=CARD, ec="#2a323b", lw=1.2))
+    ax.add_patch(FancyBboxPatch((x, y0 + th - 6), tw, 6, boxstyle="round,pad=0,rounding_size=3",
+                                fc=col, ec="none"))
+    ax.text(x + 24, y0 + 72, val, color=WHITE, fontsize=34, weight="bold")
+    ax.text(x + 24, y0 + 30, lab, color=SOFT, fontsize=13)
+
+ax.text(1216, 20, "VaR · CVaR · Monte Carlo · GARCH(1,1) · Stress tests", color=SOFT, fontsize=11, ha="right")
+fig.savefig(f"{OUT}/0_banner.png", dpi=100, facecolor=BG)
+plt.close(fig)
+print("banner done")

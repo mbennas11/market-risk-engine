@@ -1,94 +1,173 @@
-# Market Risk Engine : portefeuille multi-actifs
+<p align="center">
+  <img src="images/0_banner.png" alt="Market Risk Engine" width="100%">
+</p>
 
-Moteur de mesure du risque de marché en Python pour un portefeuille de **1 M$** réparti sur 5 classes d'actifs, à partir de données de marché réelles (Yahoo Finance, depuis janvier 2020).
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/pandas-NumPy-150458?logo=pandas&logoColor=white" alt="pandas">
+  <img src="https://img.shields.io/badge/Mod%C3%A8le-GARCH(1%2C1)-2a78d6" alt="GARCH">
+  <img src="https://img.shields.io/badge/Simulations-100%20000-1baf7a" alt="Monte Carlo">
+  <img src="https://img.shields.io/badge/Donn%C3%A9es-2020%20%E2%86%92%202026-eb6834" alt="Données">
+</p>
 
-**Question posée :** combien ce portefeuille peut-il perdre en une journée, en cas de crise, et d'où vient ce risque ?
-
-| Actif | Ticker | Poids |
-|---|---|---|
-| Actions US | SPY | 30 % |
-| Tech US | QQQ | 20 % |
-| Actions Europe | VGK | 15 % |
-| Obligations du Trésor US (20 ans et +) | TLT | 20 % |
-| Or | GLD | 15 % |
-
-## Méthodes
-
-| Module | Ce qu'il mesure |
-|---|---|
-| **VaR historique** | Le 1 % des pires rendements réellement observés, sans hypothèse de distribution |
-| **VaR paramétrique** | La même mesure en supposant des rendements gaussiens (moyenne / écart-type) |
-| **VaR Monte Carlo** | 100 000 scénarios tirés d'une loi normale multivariée (matrice de covariance des 5 actifs) |
-| **CVaR / Expected Shortfall** | La perte moyenne **au-delà** de la VaR, autrement dit l'ampleur des pertes dans le pire 1 % des cas |
-| **GARCH(1,1)** | La volatilité de demain estimée à partir des chocs récents, agrégée au niveau du portefeuille pour une VaR dynamique |
-| **Stress tests** | 5 scénarios extrêmes hypothétiques appliqués actif par actif |
-| **Contribution au risque** | La part de la volatilité totale du portefeuille apportée par chaque actif |
-| **Maximum drawdown** | La pire baisse entre un plus haut et un plus bas |
-
-## Résultats (données du 02/01/2020 au 14/10/2026)
-
-**Risque à 1 jour, niveau de confiance 99 %**
-
-| Méthode | VaR | CVaR |
-|---|---|---|
-| Historique | 2,45 % (24 544 $) | **3,57 % (35 719 $)** |
-| Paramétrique gaussienne | 2,07 % (20 675 $) | 2,38 % (23 759 $) |
-| Monte Carlo (gaussien) | 2,07 % (20 717 $) | 2,37 % (23 702 $) |
-| GARCH(1,1) | 1,48 % (14 769 $) | n/a |
-
-Rendement annualisé 12,4 % · volatilité 14,4 % · pire journée −6,9 % (12/03/2020) · **max drawdown −26,5 % (déc. 2021 → oct. 2022)**
-
-**Stress tests**
-
-| Scénario | Perte |
-|---|---|
-| Crise de liquidité | **−23,1 % (−231 500 $)** |
-| Récession mondiale | −13,9 % |
-| Krach actions | −12,7 % |
-| Choc d'inflation | −10,1 % |
-| Choc de taux | −9,6 % |
-
-## Ce qu'il faut retenir
-
-### 1. La loi normale sous-estime surtout la gravité des pertes
-<img src="images/1_queues_epaisses.png" width="520">
-
-La VaR historique dépasse la VaR gaussienne de 19 %, mais l'écart est surtout sur la **CVaR : +50 %** (3,57 % contre 2,38 %). La loi normale se trompe peu sur le seuil de perte, mais beaucoup sur **ce qui se passe une fois ce seuil franchi**. C'est la raison pour laquelle la réglementation bancaire (FRTB, Bâle III) a remplacé la VaR 99 % par l'**Expected Shortfall à 97,5 %** pour le calcul des fonds propres de marché.
-
-### 2. Un Monte Carlo ne vaut que par la distribution qu'il simule
-Le Monte Carlo donne quasiment le même résultat que la méthode paramétrique (2,07 % contre 2,07 %). C'est normal : simuler une loi normale redonne la loi normale. L'intérêt du Monte Carlo vient de ce qu'on y met : loi de Student, rééchantillonnage historique, copules, produits non linéaires comme les options. C'est la principale amélioration à faire.
-
-### 3. La volatilité arrive par vagues
-<img src="images/2_volatilite_garch.png" width="520">
-
-La volatilité conditionnelle du GARCH passe de moins de 10 % à **59 % (Covid)** et **47 % (avril 2025)**. Une volatilité moyenne de 14,4 % ne décrit jamais vraiment le marché. Aujourd'hui, le marché est calme et la VaR GARCH (1,48 %) est donc **inférieure** à la VaR historique. En période de crise, ce serait l'inverse. Une VaR conditionnelle réagit au régime de marché, une VaR historique a du retard.
-
-### 4. Le poids d'un actif n'est pas son risque
-<img src="images/3_contribution_risque.png" width="520">
-
-Les actions représentent **65 % du capital mais 88 % du risque**. Les obligations, avec 20 % du capital, n'apportent que 4 % du risque. Ce portefeuille est donc en réalité un portefeuille actions. Diversifier le capital ne veut pas dire diversifier le risque : c'est l'idée de base des approches *risk parity*.
-
-### 5. La diversification disparaît quand on en a le plus besoin
-<img src="images/4_stress_tests.png" width="520">
-
-Dans le scénario de crise de liquidité, toutes les classes d'actifs baissent ensemble et la perte atteint **23 %, soit environ 9 fois la VaR journalière**. Ce n'est pas qu'un scénario théorique : le **max drawdown réel (−26,5 %) date de 2022**, quand l'inflation a fait baisser en même temps les actions et les obligations. Les corrélations historiques utilisées par la VaR ne tiennent plus pendant une crise.
-
-## Limites et pistes d'amélioration
-- **Backtesting** de la VaR (test de Kupiec, test de Christoffersen) pour vérifier que le nombre de dépassements correspond bien à 1 %
-- **Lois à queues épaisses** : GARCH avec une loi de Student, Monte Carlo par bootstrap historique
-- **Corrélations dynamiques** (DCC-GARCH) au lieu d'une matrice de corrélation fixe
-- **Stress tests historiques** (2008, mars 2020, 2022) en plus des scénarios hypothétiques
-- Horizon de 10 jours et poids du portefeuille qui évoluent dans le temps
-
-## Lancer le projet
-```bash
-pip install -r requirements.txt
-python market_risk_engine.py     # rapport de risque complet + graphiques
-python generate_charts.py        # régénère les visuels du dossier images/
-```
-Les résultats changent selon la date d'exécution, car les données vont jusqu'au jour courant.
-
-**Stack :** Python · NumPy · pandas · SciPy · arch · yfinance · Matplotlib
+<p align="center">
+  <b>VaR · Expected Shortfall · Monte Carlo · GARCH · Stress tests · Contribution au risque</b><br>
+  Un moteur de risque de marché complet, sur données réelles, en un seul script Python.
+</p>
 
 ---
-*Mohammed Bennas, étudiant ingénieur à la recherche d'un stage en risque de marché / finance de marché.*
+
+## 🎯 En 30 secondes
+
+Un portefeuille de **1 M$** réparti sur 5 classes d'actifs est analysé sur près de 7 ans de données de marché (janvier 2020 à octobre 2026, Covid, inflation de 2022 et choc d'avril 2025 inclus).
+
+| | Résultat | Ce que ça veut dire |
+|---|---|---|
+| 📉 **VaR 99 % à 1 jour** | **24 544 $** (2,45 %) | 1 jour sur 100, la perte dépasse ce montant |
+| 🔥 **Expected Shortfall 99 %** | **35 719 $** (3,57 %) | Perte moyenne pendant ces jours-là, 50 % de plus que ce que prévoit la loi normale |
+| ⚖️ **Concentration du risque** | **88 %** | Part du risque portée par les actions, qui ne pèsent que 65 % du capital |
+| 💥 **Pire stress test** | **−231 500 $** (−23,1 %) | Crise de liquidité, environ 9 fois la VaR journalière |
+| 📊 **Max drawdown réel** | **−26,5 %** | 2022 : actions et obligations ont baissé en même temps |
+
+## 💼 Le portefeuille
+
+| Actif | ETF | Poids | Rôle |
+|---|---|:---:|---|
+| 🇺🇸 Actions US | SPY | 30 % | Cœur du portefeuille |
+| 💻 Tech US | QQQ | 20 % | Croissance, forte volatilité |
+| 🇪🇺 Actions Europe | VGK | 15 % | Diversification géographique |
+| 🏛️ Treasuries US 20 ans et + | TLT | 20 % | Couverture en cas de récession |
+| 🥇 Or | GLD | 15 % | Valeur refuge, couverture contre l'inflation |
+
+## ⚙️ Pipeline
+
+```mermaid
+flowchart LR
+    A[Yahoo Finance<br/>prix ajustés] --> B[Rendements<br/>journaliers]
+    B --> C[VaR & CVaR<br/>historique]
+    B --> D[VaR & CVaR<br/>paramétrique]
+    B --> E[Monte Carlo<br/>100 000 scénarios]
+    B --> F[GARCH 1,1<br/>par actif]
+    F --> G[VaR dynamique<br/>portefeuille]
+    B --> H[Contribution<br/>au risque]
+    B --> I[Stress tests<br/>5 scénarios]
+    C & D & E & G & H & I --> J[Rapport de risque]
+```
+
+## 💡 Ce qu'il faut retenir
+
+<table>
+<tr>
+<td width="50%"><img src="images/1_queues_epaisses.png" alt="Queues épaisses"></td>
+<td width="50%"><img src="images/2_volatilite_garch.png" alt="Volatilité GARCH"></td>
+</tr>
+<tr>
+<td valign="top">
+
+**1. La loi normale sous-estime la gravité des pertes.**
+La VaR historique dépasse la VaR gaussienne de 19 %, et l'Expected Shortfall de **50 %**. La loi normale se trompe peu sur le seuil, mais beaucoup sur ce qui se passe au-delà. C'est pour cette raison que la réglementation (FRTB, Bâle III) a remplacé la VaR 99 % par l'**Expected Shortfall 97,5 %**.
+
+</td>
+<td valign="top">
+
+**2. La volatilité arrive par vagues.**
+La volatilité GARCH passe de moins de 10 % à **59 % (Covid)** et **47 % (avril 2025)**. Le marché étant calme aujourd'hui, la VaR GARCH (1,48 %) est *inférieure* à la VaR historique. Une VaR conditionnelle suit le régime de marché, une VaR historique a toujours du retard.
+
+</td>
+</tr>
+<tr>
+<td width="50%"><img src="images/3_contribution_risque.png" alt="Contribution au risque"></td>
+<td width="50%"><img src="images/4_stress_tests.png" alt="Stress tests"></td>
+</tr>
+<tr>
+<td valign="top">
+
+**3. Le poids d'un actif n'est pas son risque.**
+Les actions représentent 65 % du capital mais **88 % du risque**. Les obligations : 20 % du capital, 4 % du risque. Diversifier le capital ne veut pas dire diversifier le risque, d'où l'intérêt des approches *risk parity*.
+
+</td>
+<td valign="top">
+
+**4. La diversification disparaît en période de crise.**
+En crise de liquidité, tout baisse ensemble : **−23 %**. Ce n'est pas que théorique : le pire drawdown réel (−26,5 %) date de **2022**, quand actions et obligations ont chuté en même temps.
+
+</td>
+</tr>
+</table>
+
+**5. Un Monte Carlo ne vaut que par la distribution qu'il simule.** Le Monte Carlo gaussien donne la même VaR que la méthode paramétrique (2,07 %) : simuler une loi normale redonne la loi normale. Pour qu'il apporte quelque chose, il faut une distribution à queues épaisses (Student, bootstrap historique, copules).
+
+## 📊 Résultats détaillés
+
+<details>
+<summary><b>VaR et Expected Shortfall à 99 %, horizon 1 jour</b></summary>
+
+| Méthode | VaR | Expected Shortfall |
+|---|---:|---:|
+| Historique | 2,45 % · 24 544 $ | **3,57 % · 35 719 $** |
+| Paramétrique gaussienne | 2,07 % · 20 675 $ | 2,38 % · 23 759 $ |
+| Monte Carlo gaussien | 2,07 % · 20 717 $ | 2,37 % · 23 702 $ |
+| GARCH(1,1) | 1,48 % · 14 769 $ | n/a |
+
+Rendement annualisé 12,4 % · volatilité 14,4 % · pire journée −6,9 % (12/03/2020)
+</details>
+
+<details>
+<summary><b>Stress tests</b></summary>
+
+| Scénario | Actions US | Tech | Europe | Treasuries | Or | **Portefeuille** |
+|---|---:|---:|---:|---:|---:|---:|
+| Crise de liquidité | −30 % | −35 % | −32 % | −8 % | −5 % | **−23,1 %** |
+| Récession mondiale | −25 % | −30 % | −28 % | +10 % | +12 % | **−13,9 %** |
+| Krach actions | −20 % | −28 % | −22 % | +5 % | +8 % | **−12,7 %** |
+| Choc d'inflation | −12 % | −18 % | −10 % | −18 % | +15 % | **−10,1 %** |
+| Choc de taux | −8 % | −12 % | −7 % | −15 % | −5 % | **−9,6 %** |
+</details>
+
+<details>
+<summary><b>Méthodologie et formules</b></summary>
+
+Avec $r$ le rendement journalier du portefeuille et un niveau $\alpha$ de 1 % :
+
+- **VaR historique** : $\text{VaR}_\alpha = -q_\alpha(r)$, quantile empirique des rendements observés
+- **Expected Shortfall** : $\text{ES}_\alpha = -\mathbb{E}[\,r \mid r \le q_\alpha\,]$
+- **Paramétrique gaussienne** : $\text{VaR}_\alpha = -(\mu + \sigma z_\alpha)$ et $\text{ES}_\alpha = -\left(\mu - \sigma \dfrac{\varphi(z_\alpha)}{\alpha}\right)$
+- **Monte Carlo** : 100 000 tirages $\mathbf{r} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$ sur les 5 actifs, agrégés avec les poids $w$
+- **GARCH(1,1)** par actif : $\sigma_t^2 = \omega + a\,\varepsilon_{t-1}^2 + b\,\sigma_{t-1}^2$, puis $\sigma_p = \sqrt{w^\top D\,R\,D\,w}$ avec $D$ la matrice diagonale des volatilités prévues et $R$ la matrice de corrélation historique
+- **Contribution au risque** : $RC_i = \dfrac{w_i\,(\Sigma w)_i}{w^\top \Sigma w}$ (la somme des contributions fait 100 %)
+</details>
+
+## 🚀 Lancer le projet
+
+```bash
+git clone https://github.com/mbennas11/market-risk-engine.git
+cd market-risk-engine
+pip install -r requirements.txt
+python market_risk_engine.py     # rapport de risque complet et graphiques
+python generate_charts.py        # régénère les visuels du dossier images/
+```
+
+> Les données vont jusqu'au jour d'exécution, donc les chiffres évoluent à chaque lancement.
+
+```
+market-risk-engine/
+├── market_risk_engine.py   # moteur de risque (VaR, ES, Monte Carlo, GARCH, stress tests)
+├── generate_charts.py      # visuels du README
+├── requirements.txt
+└── images/
+```
+
+## 🛣️ Prochaines étapes
+
+- [ ] **Backtesting** de la VaR : tests de Kupiec et de Christoffersen
+- [ ] **Queues épaisses** : GARCH avec loi de Student, Monte Carlo par bootstrap historique
+- [ ] **Corrélations dynamiques** : DCC-GARCH
+- [ ] **Stress tests historiques** : 2008, mars 2020, 2022
+- [ ] VaR à 10 jours et Expected Shortfall 97,5 % (standard FRTB)
+
+---
+
+<p align="center">
+  <b>Mohammed Bennas</b>, étudiant ingénieur en finance (ESILV), à la recherche d'un stage en risque de marché / finance de marché<br>
+  <a href="https://www.linkedin.com/in/mohammed-bennas/">LinkedIn</a> · <a href="https://github.com/mbennas11">GitHub</a>
+</p>
