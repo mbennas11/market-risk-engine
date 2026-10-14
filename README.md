@@ -33,9 +33,9 @@ Un portefeuille de **1 M$** réparti sur 5 classes d'actifs est analysé sur pr�
 
 | Actif | ETF | Poids | Rôle |
 |---|---|:---:|---|
-| 🇺🇸 Actions US | SPY | 30 % | Cœur du portefeuille |
+| 📈 Actions US | SPY | 30 % | Cœur du portefeuille |
 | 💻 Tech US | QQQ | 20 % | Croissance, forte volatilité |
-| 🇪🇺 Actions Europe | VGK | 15 % | Diversification géographique |
+| 🌍 Actions Europe | VGK | 15 % | Diversification géographique |
 | 🏛️ Treasuries US 20 ans et + | TLT | 20 % | Couverture en cas de récession |
 | 🥇 Or | GLD | 15 % | Valeur refuge, couverture contre l'inflation |
 
@@ -127,14 +127,37 @@ Rendement annualisé 12,4 % · volatilité 14,4 % · pire journée −6,9 % (12/
 <details>
 <summary><b>Méthodologie et formules</b></summary>
 
-Avec $r$ le rendement journalier du portefeuille et un niveau $\alpha$ de 1 % :
+Notations : $r$ est le rendement journalier du portefeuille, $w$ le vecteur des poids, $\Sigma$ la matrice de covariance et $\alpha$ = 1 %.
 
-- **VaR historique** : $\text{VaR}_\alpha = -q_\alpha(r)$, quantile empirique des rendements observés
-- **Expected Shortfall** : $\text{ES}_\alpha = -\mathbb{E}[\,r \mid r \le q_\alpha\,]$
-- **Paramétrique gaussienne** : $\text{VaR}_\alpha = -(\mu + \sigma z_\alpha)$ et $\text{ES}_\alpha = -\left(\mu - \sigma \dfrac{\varphi(z_\alpha)}{\alpha}\right)$
-- **Monte Carlo** : 100 000 tirages $\mathbf{r} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$ sur les 5 actifs, agrégés avec les poids $w$
-- **GARCH(1,1)** par actif : $\sigma_t^2 = \omega + a\,\varepsilon_{t-1}^2 + b\,\sigma_{t-1}^2$, puis $\sigma_p = \sqrt{w^\top D\,R\,D\,w}$ avec $D$ la matrice diagonale des volatilités prévues et $R$ la matrice de corrélation historique
-- **Contribution au risque** : $RC_i = \dfrac{w_i\,(\Sigma w)_i}{w^\top \Sigma w}$ (la somme des contributions fait 100 %)
+**VaR et Expected Shortfall historiques** (quantile empirique des rendements observés)
+
+```math
+\mathrm{VaR}_{\alpha} = -q_{\alpha}(r) \qquad \mathrm{ES}_{\alpha} = -\mathbb{E}\left[ r \mid r \le q_{\alpha}(r) \right]
+```
+
+**Paramétrique gaussienne**
+
+```math
+\mathrm{VaR}_{\alpha} = -(\mu + \sigma z_{\alpha}) \qquad \mathrm{ES}_{\alpha} = -\left(\mu - \sigma \frac{\varphi(z_{\alpha})}{\alpha}\right)
+```
+
+**Monte Carlo** : 100 000 scénarios sur les 5 actifs, agrégés avec les poids
+
+```math
+\mathbf{r}^{(k)} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma), \qquad r_p^{(k)} = w^{\top} \mathbf{r}^{(k)}
+```
+
+**GARCH(1,1)** par actif, puis agrégation avec la matrice de corrélation historique $R$
+
+```math
+\sigma_t^2 = \omega + a \, \varepsilon_{t-1}^2 + b \, \sigma_{t-1}^2 \qquad \sigma_p = \sqrt{w^{\top} D R D w}, \quad D = \mathrm{diag}(\hat{\sigma}_{1}, \dots, \hat{\sigma}_{5})
+```
+
+**Contribution au risque** (la somme des contributions fait 100 %)
+
+```math
+RC_i = \frac{w_i (\Sigma w)_i}{w^{\top} \Sigma w}
+```
 </details>
 
 ## 🚀 Lancer le projet
