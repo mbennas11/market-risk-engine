@@ -144,7 +144,7 @@ for i, (lab, v) in enumerate(tiles):
     x = 64 + (i % 2) * (cw + gx)
     y = 380 - (i // 2) * (ch + gy)
     card(ax, x, y, cw, ch, ORANGE_D if i == 0 else BLUE_D)
-    ax.text(x + 28, y + 100, usd(v * V), color=WHITE, fontsize=36, weight="bold")
+    ax.text(x + 28, y + 100, "−" + usd(v * V), color=WHITE, fontsize=36, weight="bold")
     ax.text(x + 28, y + 42, lab, color=SOFT, fontsize=17)
 ax.text(936, 115, "Laquelle croire ?  →", color=WHITE, fontsize=22, weight="bold", ha="right")
 save(fig, "1_couverture.png", BG, dpi=120)
