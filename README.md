@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <b>VaR · Expected Shortfall · Monte Carlo · GARCH · Stress tests · Contribution au risque</b><br>
+  <b>VaR · Expected Shortfall (CVaR) · Monte Carlo · GARCH · Stress tests · Contribution au risque</b><br>
   Un moteur de risque de marché complet, sur données réelles, en un seul script Python.
 </p>
 
@@ -24,7 +24,7 @@ Un portefeuille de **1 M$** réparti sur 5 classes d'actifs est analysé sur pr�
 | | Résultat | Ce que ça veut dire |
 |---|---|---|
 | 📉 **VaR 99 % à 1 jour** | **24 544 $** (2,45 %) | 1 jour sur 100, la perte dépasse ce montant |
-| 🔥 **Expected Shortfall 99 %** | **35 719 $** (3,57 %) | Perte moyenne pendant ces jours-là, 50 % de plus que ce que prévoit la loi normale |
+| 🔥 **Expected Shortfall (CVaR) 99 %** | **35 719 $** (3,57 %) | Perte moyenne pendant ces jours-là, 50 % de plus que ce que prévoit la loi normale |
 | ⚖️ **Concentration du risque** | **88 %** | Part du risque portée par les actions, qui ne pèsent que 65 % du capital |
 | 💥 **Pire stress test** | **−231 500 $** (−23,1 %) | Crise de liquidité, environ 9 fois la VaR journalière |
 | 📊 **Max drawdown réel** | **−26,5 %** | 2022 : actions et obligations ont baissé en même temps |
@@ -102,7 +102,7 @@ En crise de liquidité, tout baisse ensemble : **−23 %**. Ce n'est pas que th�
 <details>
 <summary><b>VaR et Expected Shortfall à 99 %, horizon 1 jour</b></summary>
 
-| Méthode | VaR | Expected Shortfall |
+| Méthode | VaR | Expected Shortfall (CVaR) |
 |---|---:|---:|
 | Historique | 2,45 % · 24 544 $ | **3,57 % · 35 719 $** |
 | Paramétrique gaussienne | 2,07 % · 20 675 $ | 2,38 % · 23 759 $ |
